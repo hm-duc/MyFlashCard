@@ -1,54 +1,57 @@
 package com.hmd.flashcard.presentation.ui.theme
-
-import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import java.util.Calendar
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
-)
+enum class TimeSlot {
+    Morning, Noon, Evening
+}
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+fun colorSchemeFor(timeSlot: TimeSlot): ColorScheme {
+    return when (timeSlot) {
+        TimeSlot.Morning -> lightColorScheme(
+            primary = MorningPrimary,
+            background = MorningBackground,
+            surface = White,
+            onPrimary = Black,
+            onBackground = MorningOnBackground,
+        )
+        TimeSlot.Noon -> lightColorScheme(
+            primary = NoonPrimary,
+            background = NoonBackground,
+            surface = White,
+            onPrimary = White,
+            onBackground = EveningOnBackground,
+        )
+        TimeSlot.Evening -> darkColorScheme(
+            primary = EveningPrimary,
+            background = EveningBackground,
+            surface = EveningSurface,
+            onPrimary = White,
+            onBackground = Black,
+        )
+    }
+}
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
-)
+fun getCurrentTimeSlot(): TimeSlot {
+    val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    return when (hour) {
+        in 6..10 -> TimeSlot.Morning
+        in 11..16 -> TimeSlot.Noon
+        else -> TimeSlot.Evening
+    }
+}
 
 @Composable
 fun MyFlashCardTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    timeSlot: TimeSlot = getCurrentTimeSlot(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+    val colorScheme = colorSchemeFor(timeSlot)
 
     MaterialTheme(
         colorScheme = colorScheme,
